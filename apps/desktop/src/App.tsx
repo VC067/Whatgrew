@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 import { hierarchy, treemap, treemapSquarify } from 'd3-hierarchy';
+import type { HierarchyRectangularNode } from 'd3-hierarchy';
 import {
   Activity, ArrowDownRight, ArrowRight, ArrowUpRight, Check, ChevronLeft, ChevronRight, Clock3, Copy, ExternalLink, Folder, FolderOpen,
   HardDrive, Info, LayoutDashboard, LoaderCircle, Play, RefreshCw, Settings2,
@@ -171,13 +172,21 @@ function Growth({ snapshots, diff, selectedOld, setSelectedOld, onReveal, onCopy
   </div>;
 }
 
+type TreemapDatum = {
+  name: string;
+  value?: number;
+  bytes?: number;
+  path?: string;
+  delta?: number | null;
+  children?: TreemapDatum[];
+};
+
 function Treemap({ children, colorGrowth, onDrill }: { children: ExploreChild[]; colorGrowth: boolean; onDrill: (p: string) => void }) {
   const leaves = useMemo(() => {
-    type NodeDatum = { name: string; value?: number; bytes?: number; path?: string; delta?: number | null; children?: NodeDatum[] };
-    const input: NodeDatum = { name: 'root', children: children.filter(c => c.bytes > 0).map(c => ({ ...c, value: c.bytes })) };
-    const root = hierarchy<NodeDatum>(input).sum(d => d.value ?? 0).sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
-    treemap<NodeDatum>().size([944, 436]).paddingOuter(4).paddingInner(4).tile(treemapSquarify.ratio(1.35))(root);
-    return root.leaves();
+    const input: TreemapDatum = { name: 'root', children: children.filter(c => c.bytes > 0).map(c => ({ ...c, value: c.bytes })) };
+    const root = hierarchy<TreemapDatum>(input).sum(d => d.value ?? 0).sort((a, b) => (b.value ?? 0) - (a.value ?? 0));
+    treemap<TreemapDatum>().size([944, 436]).paddingOuter(4).paddingInner(4).tile(treemapSquarify.ratio(1.35))(root);
+    return root.leaves() as HierarchyRectangularNode<TreemapDatum>[];
   }, [children]);
   const palette = ['#8077e9', '#5d9ee9', '#47b8b3', '#e6ad73', '#9a8fe3', '#6ea79c', '#d08dad', '#839ab3', '#b9aacd'];
   if (!leaves.length) return <div className="quiet-empty">This folder has no tracked subfolders or files.</div>;

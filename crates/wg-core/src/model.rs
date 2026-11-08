@@ -71,14 +71,22 @@ impl Snapshot {
     pub fn node_paths(&self) -> Vec<String> {
         let mut paths = vec![String::new(); self.dirs.len()];
         for dir in &self.dirs {
-            if dir.id as usize >= paths.len() { continue; }
+            if dir.id as usize >= paths.len() {
+                continue;
+            }
             let name = if let Some(parent) = dir.parent {
                 let prefix = paths.get(parent as usize).map(String::as_str).unwrap_or("");
-                if prefix.is_empty() { dir.name.clone() } else { format!("{prefix}/{}", dir.name) }
+                if prefix.is_empty() {
+                    dir.name.clone()
+                } else {
+                    format!("{prefix}/{}", dir.name)
+                }
             } else {
                 String::new()
             };
-            if let Some(slot) = paths.get_mut(dir.id as usize) { *slot = name; }
+            if let Some(slot) = paths.get_mut(dir.id as usize) {
+                *slot = name;
+            }
         }
         paths
     }

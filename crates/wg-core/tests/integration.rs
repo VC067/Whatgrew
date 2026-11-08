@@ -10,8 +10,13 @@ fn scans_allocated_bytes_and_roundtrips() -> Result<(), Box<dyn std::error::Erro
     fs::write(root.path().join("beta.txt"), vec![7; 3100])?;
     let opts = scan::ScanOptions::new(root.path().to_path_buf());
     let value = scan::scan(&opts, &AtomicBool::new(false), None)?;
-    let expected = wg_core::platform::allocated(&root.path().join("nested/alpha.txt"), &fs::metadata(root.path().join("nested/alpha.txt"))?)
-        + wg_core::platform::allocated(&root.path().join("beta.txt"), &fs::metadata(root.path().join("beta.txt"))?);
+    let expected = wg_core::platform::allocated(
+        &root.path().join("nested/alpha.txt"),
+        &fs::metadata(root.path().join("nested/alpha.txt"))?,
+    ) + wg_core::platform::allocated(
+        &root.path().join("beta.txt"),
+        &fs::metadata(root.path().join("beta.txt"))?,
+    );
     assert_eq!(value.root().ok_or("missing root")?.alloc_bytes, expected);
     assert_eq!(value.root().ok_or("missing root")?.file_count, 2);
     let store = tempfile::tempdir()?;
@@ -23,7 +28,8 @@ fn scans_allocated_bytes_and_roundtrips() -> Result<(), Box<dyn std::error::Erro
 }
 
 #[test]
-fn attributes_growth_to_child_and_respects_cancellation() -> Result<(), Box<dyn std::error::Error>> {
+fn attributes_growth_to_child_and_respects_cancellation() -> Result<(), Box<dyn std::error::Error>>
+{
     let root = tempfile::tempdir()?;
     fs::create_dir(root.path().join("node_modules"))?;
     let mut opts = scan::ScanOptions::new(root.path().to_path_buf());
@@ -31,7 +37,15 @@ fn attributes_growth_to_child_and_respects_cancellation() -> Result<(), Box<dyn 
     let before = scan::scan(&opts, &AtomicBool::new(false), None)?;
     fs::write(root.path().join("node_modules/big.bin"), vec![1; 8193])?;
     let after = scan::scan(&opts, &AtomicBool::new(false), None)?;
-    let delta = diff::compare(&before, &after, &diff::DiffParams { min_hotspot: 1, ..Default::default() }, &rules::load_rules())?;
+    let delta = diff::compare(
+        &before,
+        &after,
+        &diff::DiffParams {
+            min_hotspot: 1,
+            ..Default::default()
+        },
+        &rules::load_rules(),
+    )?;
     assert!(delta.growth_bytes > 0);
     assert!(delta.hotspots.iter().any(|h| h.name == "node_modules"));
     let cancelled = AtomicBool::new(true);
@@ -47,13 +61,18 @@ fn ignores_symlinks_and_dedupes_hardlinks() -> Result<(), Box<dyn std::error::Er
     fs::write(root.path().join("file"), vec![3; 8000])?;
     fs::hard_link(root.path().join("file"), root.path().join("hard"))?;
     symlink(root.path(), root.path().join("loop"))?;
-    let result = scan::scan(&scan::ScanOptions::new(root.path().to_path_buf()), &AtomicBool::new(false), None)?;
+    let result = scan::scan(
+        &scan::ScanOptions::new(root.path().to_path_buf()),
+        &AtomicBool::new(false),
+        None,
+    )?;
     assert_eq!(result.root().ok_or("missing root")?.file_count, 1);
     Ok(())
 }
 
 #[test]
-fn rejects_invalid_exclusions_and_newer_snapshot_versions() -> Result<(), Box<dyn std::error::Error>> {
+fn rejects_invalid_exclusions_and_newer_snapshot_versions() -> Result<(), Box<dyn std::error::Error>>
+{
     let root = tempfile::tempdir()?;
     let mut opts = scan::ScanOptions::new(root.path().to_path_buf());
     opts.exclude = vec!["[invalid".into()];
@@ -65,7 +84,9 @@ fn rejects_invalid_exclusions_and_newer_snapshot_versions() -> Result<(), Box<dy
     let mut encoded = fs::read(&saved)?;
     encoded[4..8].copy_from_slice(&u32::MAX.to_le_bytes());
     fs::write(&saved, encoded)?;
-    let error = snapshot::load(&saved).err().ok_or("expected invalid version")?;
+    let error = snapshot::load(&saved)
+        .err()
+        .ok_or("expected invalid version")?;
     assert!(error.to_string().contains("newer"));
     Ok(())
 }
