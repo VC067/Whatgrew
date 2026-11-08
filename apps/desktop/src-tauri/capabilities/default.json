@@ -1,0 +1,1 @@
+{ "identifier": "default", "description": "whatgrew desktop app", "windows": ["main"], "permissions": ["core:default"] }

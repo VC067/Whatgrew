@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = ["crates/wg-core", "crates/wg-cli", "apps/desktop/src-tauri"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/VC067/whatgrew"
+
+[workspace.dependencies]
+wg-core = { path = "crates/wg-core" }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+anyhow = "1"
+thiserror = "2"

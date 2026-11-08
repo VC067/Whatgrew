@@ -1,0 +1,59 @@
+[[rule]]
+match = "**/Docker/**"
+label = "Docker storage"
+hint = "Images, containers and build caches can grow quickly. Inspect Docker's own storage tools before cleaning."
+
+[[rule]]
+match = "**/.cache/huggingface/**"
+label = "AI model cache"
+hint = "Downloaded Hugging Face models and datasets. Manage these using the Hugging Face cache tools."
+
+[[rule]]
+match = "**/.ollama/models/**"
+label = "Ollama models"
+hint = "Local language models. Use Ollama's own commands to remove models you no longer need."
+
+[[rule]]
+match = "**/node_modules"
+label = "Node dependencies"
+hint = "Project dependencies recreated by npm/pnpm/yarn. Confirm they're no longer needed before cleaning."
+
+[[rule]]
+match = "**/target"
+label = "Rust build output"
+hint = "Cargo's compiled artifacts. Can be rebuilt, but may take time and bandwidth."
+
+[[rule]]
+match = "**/DerivedData/**"
+label = "Xcode DerivedData"
+hint = "Xcode intermediate output. Inspect in Xcode before cleaning."
+
+[[rule]]
+match = "**/SoftwareDistribution/Download/**"
+label = "Windows update cache"
+hint = "Use Windows' built-in Storage cleanup tools."
+
+[[rule]]
+match = "**/WinSxS/**"
+label = "Windows component store"
+hint = "Do not delete manually. Use Windows servicing tools if cleanup is needed."
+
+[[rule]]
+match = "**/.gradle/**"
+label = "Gradle cache"
+hint = "Gradle build dependencies and artifacts."
+
+[[rule]]
+match = "**/.cargo/registry/**"
+label = "Cargo registry cache"
+hint = "Downloaded Rust crates, cached for repeat builds."
+
+[[rule]]
+match = "**/.cache/pip/**"
+label = "pip cache"
+hint = "Cached Python packages and wheels."
+
+[[rule]]
+match = "**/.Trash/**"
+label = "Trash"
+hint = "Files in Trash still use disk space. Review before emptying."
